@@ -3,18 +3,22 @@ package main
 import (
 	"fmt"
 	"github.com/slofurno/guru-cli/guru"
+	"os"
 )
-
-const TOKEN = "Basic c2xvZnVybm9AZ21haWwuY29tOjBkZjQzN2QwLWY1NjgtNGViOS04MTMyLTk4MjVkZjdkMmJhOA=="
 
 func main() {
 
-	client := guru.NewClient(&guru.Config{Token: TOKEN})
+	cookie := os.Getenv("GURU_COOKIE")
+	client := guru.NewClient(&guru.Config{Cookie: cookie})
 
 	results := client.GetFacts("mesos", "docker")
 
 	for _, card := range results {
 		fmt.Println(card.Title, card.Type)
+	}
+
+	for _, board := range client.GetBoards() {
+		fmt.Println(board.Title, board.Description)
 	}
 
 	/*

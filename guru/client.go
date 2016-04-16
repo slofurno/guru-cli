@@ -1,26 +1,62 @@
 package guru
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 )
 
 type Client struct {
 	*http.Client
-	token string
+	token  string
+	config *Config
 }
 
 type Config struct {
-	Token string
+	Token  string
+	Cookie string
+}
+
+type Auth struct {
+	Token string `json:"token"`
+	Email string `json:"email"`
 }
 
 func NewClient(config *Config) *Client {
-	return &Client{
-		Client: &http.Client{},
-		token:  config.Token,
+
+	client := &http.Client{}
+
+	req, _ := http.NewRequest("POST", "https://api.getguru.com/user/auth", nil)
+	req.Header.Set("Cookie", config.Cookie)
+	res, err := client.Do(req)
+
+	if err != nil {
+		os.Exit(1)
 	}
+
+	decoder := json.NewDecoder(res.Body)
+	auth := &Auth{}
+	err = decoder.Decode(auth)
+
+	if err != nil {
+		os.Exit(1)
+	}
+
+	token := fmt.Sprintf("%v:%v", auth.Email, auth.Token)
+
+	return &Client{
+		Client: client,
+		token:  token,
+		config: config,
+	}
+}
+
+func (s *Client) makeRequest(method string, url string, body io.Reader) (*http.Response, error) {
+	req, _ := http.NewRequest(method, url, body)
+	req.Header.Set("Authorization", s.token)
+	return s.Do(req)
 }
 
 func reduce(acc string, xs []string, fn func(string, string) string) string {
@@ -39,50 +75,4 @@ func reduce(acc string, xs []string, fn func(string, string) string) string {
 	}
 
 	return acc
-}
-
-func (s *Client) UpdateCard(card *Card) int {
-	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%v", card.Id)
-	req, _ := http.NewRequest("PUT", uri, nil)
-	req.Header.Set("Authorization", s.token)
-	res, _ := s.Do(req)
-
-	return res.StatusCode
-}
-
-func (s *Client) CreateCard(card *Card) *Card {
-	uri := "https://api.getguru.com/api/v1/cards/"
-	body := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(body)
-	_ = encoder.Encode(card)
-	req, _ := http.NewRequest("POST", uri, body)
-	req.Header.Set("Authorization", s.token)
-
-	res, err := s.Do(req)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	ret := &Card{}
-	decoder := json.NewDecoder(res.Body)
-	_ = decoder.Decode(ret)
-
-	return ret
-}
-
-func (s *Client) GetFacts(query ...string) []*Fact {
-	qs := reduce("", query, func(a string, c string) string {
-		return a + "," + c
-	})
-
-	uri := fmt.Sprintf("https://api.getguru.com/api/v1/search?terms=%v", qs)
-	req, _ := http.NewRequest("GET", uri, nil)
-	req.Header.Set("Authorization", s.token)
-	res, _ := s.Do(req)
-
-	decoder := json.NewDecoder(res.Body)
-	results := []*Fact{}
-	_ = decoder.Decode(&results)
-	return results
 }
