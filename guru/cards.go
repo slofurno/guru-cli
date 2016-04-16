@@ -4,30 +4,34 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
-
-type Fact struct {
-	Id      string `json:"id"`
-	Content string `json:"content"`
-	Title   string `json:"preferredPhrase"`
-	Type    string `json:"cardType"`
-}
 
 type Card struct {
 	Id                   string `json:"id, omitempty"`
-	PreferredPhrase      string `json:"preferredPhrase"`
+	Title                string `json:"preferredPhrase"`
 	Content              string `json:"content"`
-	VerificationInterval string `json:"verificationInterval"`
+	VerificationInterval int    `json:"verificationInterval"`
 	ShareStatus          string `json:"shareStatus"`
 	CardType             string `json:"cardType"`
 }
 
+func NewCard(title, content string) *Card {
+	return &Card{
+		Title:                title,
+		Content:              content,
+		VerificationInterval: 30,
+		ShareStatus:          "TEAM",
+		CardType:             "CARD",
+	}
+}
+
 func (s *Client) UpdateCard(card *Card) int {
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%v", card.Id)
-	req, _ := http.NewRequest("PUT", uri, nil)
-	req.Header.Set("Authorization", s.token)
-	res, _ := s.Do(req)
+	buffer := bytes.NewBuffer(nil)
+	encoder := json.NewEncoder(buffer)
+	encoder.Encode(card)
+
+	res, _ := s.makeRequest("PUT", uri, buffer)
 
 	return res.StatusCode
 }
@@ -37,34 +41,34 @@ func (s *Client) CreateCard(card *Card) *Card {
 	body := bytes.NewBuffer(nil)
 	encoder := json.NewEncoder(body)
 	_ = encoder.Encode(card)
-	req, _ := http.NewRequest("POST", uri, body)
-	req.Header.Set("Authorization", s.token)
 
-	res, err := s.Do(req)
+	res, err := s.makeRequest("POST", uri, body)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 	}
 
 	ret := &Card{}
 	decoder := json.NewDecoder(res.Body)
-	_ = decoder.Decode(ret)
+	err = decoder.Decode(ret)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	return ret
 }
 
-func (s *Client) GetFacts(query ...string) []*Fact {
+func (s *Client) GetFacts(query ...string) []*Card {
 	qs := reduce("", query, func(a string, c string) string {
 		return a + "," + c
 	})
 
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/search?terms=%v", qs)
-	req, _ := http.NewRequest("GET", uri, nil)
-	req.Header.Set("Authorization", s.token)
-	res, _ := s.Do(req)
+	res, _ := s.makeRequest("GET", uri, nil)
 
 	decoder := json.NewDecoder(res.Body)
-	results := []*Fact{}
+	results := []*Card{}
 	_ = decoder.Decode(&results)
 	return results
 }
