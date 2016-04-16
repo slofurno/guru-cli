@@ -1,6 +1,7 @@
 package guru
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,10 +46,12 @@ func NewClient(config *Config) *Client {
 	}
 
 	token := fmt.Sprintf("%v:%v", auth.Email, auth.Token)
+	encoded := base64.StdEncoding.EncodeToString([]byte(token))
+	authtoken := fmt.Sprintf("Basic %v", encoded)
 
 	return &Client{
 		Client: client,
-		token:  token,
+		token:  authtoken,
 		config: config,
 	}
 }
