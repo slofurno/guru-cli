@@ -26,33 +26,8 @@ type Auth struct {
 }
 
 func NewClient(config *Config) *Client {
-
-	client := &http.Client{}
-	/*
-		req, _ := http.NewRequest("POST", "https://api.getguru.com/user/auth", nil)
-		req.Header.Set("Cookie", config.Cookie)
-		res, err := client.Do(req)
-
-		if err != nil {
-			os.Exit(1)
-		}
-
-		decoder := json.NewDecoder(res.Body)
-		auth := &Auth{}
-		err = decoder.Decode(auth)
-
-		if err != nil {
-			os.Exit(1)
-		}
-
-		token := fmt.Sprintf("%v:%v", auth.Email, auth.Token)
-		encoded := base64.StdEncoding.EncodeToString([]byte(token))
-		authtoken := fmt.Sprintf("Basic %v", encoded)
-
-		fmt.Println(authtoken)
-	*/
 	return &Client{
-		Client: client,
+		Client: &http.Client{},
 		token:  config.Token,
 		config: config,
 	}
@@ -61,8 +36,7 @@ func NewClient(config *Config) *Client {
 func (s *Client) auth() {
 	req, _ := http.NewRequest("POST", "https://api.getguru.com/user/auth", nil)
 	req.Header.Set("Cookie", s.config.ReloginToken)
-	client := &http.Client{}
-	res, err := client.Do(req)
+	res, err := s.Do(req)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -82,7 +56,7 @@ func (s *Client) auth() {
 	encoded := base64.StdEncoding.EncodeToString([]byte(token))
 	authtoken := fmt.Sprintf("Basic %v", encoded)
 
-	fmt.Println("auth and set token:", authtoken)
+	fmt.Println("authed and set token:", authtoken)
 	home := os.Getenv("HOME")
 
 	f, err := os.Create(home + "/.guru/token")
@@ -116,29 +90,10 @@ func (s *Client) makeRequest(method string, url string, body io.Reader) (*http.R
 
 		fmt.Println(res.StatusCode)
 
-		if res.StatusCode != http.StatusUnauthorized {
-			fmt.Println("not unauthed")
+		if res.StatusCode == http.StatusUnauthorized {
+			s.auth()
+		} else {
 			return res, err
 		}
-
-		s.auth()
 	}
-}
-
-func reduce(acc string, xs []string, fn func(string, string) string) string {
-	if len(xs) == 0 {
-		return acc
-	}
-
-	i := 0
-	if acc == "" {
-		i = 1
-		acc = xs[0]
-	}
-
-	for ; i < len(xs); i++ {
-		acc = fn(acc, xs[i])
-	}
-
-	return acc
 }

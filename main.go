@@ -11,7 +11,6 @@ import (
 func main() {
 
 	home := os.Getenv("HOME")
-	fmt.Println(home)
 	var maybetoken string
 
 	f, err := os.Open(home + "/.guru/relogin_token")
@@ -30,9 +29,6 @@ func main() {
 		maybetoken = strings.TrimSpace(string(t))
 	}
 
-	fmt.Println(reloginToken)
-	fmt.Println(maybetoken)
-
 	client := guru.NewClient(&guru.Config{ReloginToken: reloginToken, Token: maybetoken})
 	results := client.GetFacts("mesos", "docker")
 
@@ -46,5 +42,4 @@ func main() {
 
 	card := client.CreateCard(guru.NewCard("test", "testerino"))
 	fmt.Println(card.Id)
-
 }

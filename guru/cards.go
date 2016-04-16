@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 type Card struct {
@@ -60,9 +61,7 @@ func (s *Client) CreateCard(card *Card) *Card {
 }
 
 func (s *Client) GetFacts(query ...string) []*Card {
-	qs := reduce("", query, func(a string, c string) string {
-		return a + "," + c
-	})
+	qs := strings.Join(query, ",")
 
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/search?terms=%v", qs)
 	res, _ := s.makeRequest("GET", uri, nil)
