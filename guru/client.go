@@ -18,11 +18,17 @@ type Client struct {
 type Config struct {
 	Token        string
 	ReloginToken string
+	Team         string
 }
 
 type Auth struct {
 	Token string `json:"token"`
 	Email string `json:"email"`
+	Team  *Team  `json:"team"`
+}
+
+type Team struct {
+	Id string `json:"id"`
 }
 
 func NewClient(config *Config) *Client {
@@ -68,6 +74,7 @@ func (s *Client) auth() {
 	}
 
 	f.WriteString(fmt.Sprintf("%v\n", authtoken))
+	s.config.Team = auth.Team.Id
 	s.token = authtoken
 }
 

@@ -60,6 +60,13 @@ func (s *Client) CreateCard(card *Card) *Card {
 	return ret
 }
 
+func (s *Client) ArchiveCard(card *Card) {
+	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%v", card.Id)
+	res, _ := s.makeRequest("DELETE", uri, nil)
+
+	fmt.Println(res.Status)
+}
+
 func (s *Client) GetFacts(query ...string) []*Card {
 	qs := strings.Join(query, ",")
 

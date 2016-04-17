@@ -24,9 +24,10 @@ func main() {
 	reloginToken := strings.TrimSpace(string(b))
 	fmt.Println(reloginToken)
 
-	t, err := ioutil.ReadFile(home + "/.guru/token")
+	_, err = ioutil.ReadFile(home + "/.guru/token")
 	if err == nil {
-		maybetoken = strings.TrimSpace(string(t))
+		//TODO: right now i need to force auth for the team id
+		//maybetoken = strings.TrimSpace(string(t))
 	}
 
 	client := guru.NewClient(&guru.Config{ReloginToken: reloginToken, Token: maybetoken})
@@ -40,6 +41,24 @@ func main() {
 		fmt.Println(board.Title, board.Description)
 	}
 
-	card := client.CreateCard(guru.NewCard("test", "testerino"))
-	fmt.Println(card.Id)
+	//card := client.CreateCard(guru.NewCard("test", "testerino"))
+	//fmt.Println(card.Id)
+
+	tagCategories := client.GetTagCategories()
+	defaultCategory := tagCategories[0]
+
+	var lastTag string
+
+	for _, tag := range defaultCategory.Tags {
+		lastTag = tag.Id
+		fmt.Println(tag.Id + " " + tag.Value)
+	}
+
+	cards := client.CardByTags(lastTag)
+
+	fmt.Println("cards matching")
+	for _, x := range cards {
+		fmt.Println(x.Id + " " + x.Title)
+	}
+
 }
