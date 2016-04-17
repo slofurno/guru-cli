@@ -4,23 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
-func (s *Client) CardByTags(tagIds ...string) []*Card {
-	qr := &QueryRequest{Query: DefaultQuery()}
-	expression := DefaultExpression()
-	expression.Ids = tagIds
-	qr.Query.NestedExpressions = []*Expression{expression}
+func (s *Client) QueryCards(tags ...string) []*Card {
+	searchTerms := strings.Join(tags, " ")
+	query := &QueryRequest{
+		Query: &Query{
+			NestedExpressions: []*Expression{&Expression{
+				CardType: "QUESTION",
+				Op:       "NE",
+				Type:     "card-type",
+			}},
+			Op:   "AND",
+			Type: "grouping",
+		},
+		SearchTerms: searchTerms,
+	}
 
 	buffer := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(buffer)
-
-	err := encoder.Encode(qr)
+	err := json.NewEncoder(buffer).Encode(query)
 
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	//fmt.Println(string(buffer.Bytes()))
 	//TODO: check for 204: no content (if no matches)
 	//FIXME: this won't populate tags :(
 	res, err := s.makeRequest("POST", "https://api.getguru.com/api/v1/search/query", buffer)
@@ -29,9 +36,8 @@ func (s *Client) CardByTags(tagIds ...string) []*Card {
 	}
 
 	cards := []*Card{}
-	decoder := json.NewDecoder(res.Body)
+	err = json.NewDecoder(res.Body).Decode(&cards)
 
-	err = decoder.Decode(&cards)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -39,15 +45,17 @@ func (s *Client) CardByTags(tagIds ...string) []*Card {
 }
 
 type QueryRequest struct {
-	Query *Query `json:"query"`
+	Query       *Query `json:"query"`
+	SearchTerms string `json:"searchTerms"`
 	//ShowArchived nil `json:"showArchived"`
 	//Sorts        nil `json:"sorts"`
 }
 
 type Expression struct {
-	Type string   `json:"type"`
-	Ids  []string `json:"ids"`
-	Op   string   `json:"op"`
+	Type     string   `json:"type"`
+	Ids      []string `json:"ids, omitempty"`
+	Op       string   `json:"op"`
+	CardType string   `json:"cardType"`
 }
 
 type Query struct {

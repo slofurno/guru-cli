@@ -18,7 +18,7 @@ func joinTags(card *guru.Card) string {
 
 func main() {
 	args := os.Args[1:]
-	if len(args) < 2 {
+	if len(args) < 1 {
 		fmt.Println("not enough args")
 		os.Exit(1)
 	}
@@ -26,24 +26,6 @@ func main() {
 	client := initClient()
 
 	switch args[0] {
-	case "find":
-		defaultCat := client.GetTagCategories()[0]
-		tagMap := map[string]string{}
-		for _, tag := range defaultCat.Tags {
-			tagMap[tag.Value] = tag.Id
-		}
-
-		tags := []string{}
-		for _, tag := range strings.Split(args[1], ",") {
-			tags = append(tags, tagMap[tag])
-		}
-
-		cards := client.CardByTags(tags...)
-		for _, card := range cards {
-			mytags := joinTags(card)
-			fmt.Printf("%-22s %s  %s\n", card.Id, card.Title, mytags)
-		}
-
 	case "create-card":
 		title := args[1]
 		content := strings.Join(args[2:], " ")
@@ -58,8 +40,12 @@ func main() {
 		id := args[1]
 		tags := strings.Split(args[2], ",")
 		client.AddTags(id, tags)
+	default:
+		cards := client.QueryCards(args...)
+		for _, card := range cards {
+			fmt.Printf("%s \n%s\n\n", card.Title, card.Content)
+		}
 	}
-
 }
 
 func initClient() *guru.Client {

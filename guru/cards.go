@@ -15,6 +15,8 @@ type Card struct {
 	ShareStatus          string `json:"shareStatus"`
 	CardType             string `json:"cardType"`
 	Tags                 []*Tag `json:"tags, omitempty"`
+	FileProvider         string `json:"fileProvider"`
+	FileLink             string `json:"fileLink"`
 }
 
 func NewCard(title, content string) *Card {

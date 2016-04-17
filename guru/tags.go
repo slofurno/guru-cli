@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 )
 
 type Tag struct {
@@ -82,6 +83,8 @@ func (s *Client) AddTagToCards(request *BulkRequest) {
 	//fmt.Println(string(buffer.Bytes()))
 	res, _ := s.makeRequest("POST", "https://api.getguru.com/api/v1/cards/bulkop", buffer)
 	fmt.Println("bulkops status: " + res.Status)
+	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Println(string(body))
 }
 
 //DELETE https://api.getguru.com/api/v1/teams/f390146e-ebe5-42b3-b077-a632d5564789/tagcategories/tags/b8ef1e93-b4a5-4139-a1b1-af344b118fa7

@@ -35,7 +35,7 @@ func TestEverything(t *testing.T) {
 	team := client.GetTeam()
 	client.Config.Team = team.Id
 
-	results := client.SearchCards("asdasd", "sadasdas")
+	results := client.SearchCards("rick", "mesos")
 	cardIds := []string{}
 
 	fmt.Println("search results:")
@@ -63,7 +63,7 @@ func TestEverything(t *testing.T) {
 		fmt.Println(tag.Id + " " + tag.Value)
 	}
 
-	cards := client.CardByTags(lastTagId)
+	cards := client.QueryCards(lastTagId)
 
 	fmt.Printf("\ncards with the tag %s: \n", lastTagId)
 	for _, x := range cards {
