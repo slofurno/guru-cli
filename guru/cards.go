@@ -69,7 +69,7 @@ func (s *Client) ArchiveCard(card *Card) {
 	fmt.Println(res.Status)
 }
 
-func (s *Client) GetFacts(query ...string) []*Card {
+func (s *Client) SearchCards(query ...string) []*Card {
 	qs := strings.Join(query, ",")
 
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/search?terms=%v", qs)
@@ -79,4 +79,32 @@ func (s *Client) GetFacts(query ...string) []*Card {
 	results := []*Card{}
 	_ = decoder.Decode(&results)
 	return results
+}
+
+func (s *Client) GetCard(id string) *Card {
+	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%s", id)
+	res, _ := s.makeRequest("GET", uri, nil)
+
+	decoder := json.NewDecoder(res.Body)
+	card := &Card{}
+	_ = decoder.Decode(card)
+	return card
+}
+
+func (s *Client) AddTags(cardId string, tags []string) {
+	defaultCat := s.GetTagCategories()[0]
+	tagMap := map[string]string{}
+	for _, tag := range defaultCat.Tags {
+		tagMap[tag.Value] = tag.Id
+	}
+
+	//TODO:make sure tag exists
+	for _, tag := range tags {
+		s.AddTag(cardId, tagMap[tag])
+	}
+}
+
+func (s *Client) AddTag(cardId, tagId string) {
+	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%s/tags/%s", cardId, tagId)
+	_, _ = s.makeRequest("PUT", uri, nil)
 }

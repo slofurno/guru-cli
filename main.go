@@ -8,6 +8,14 @@ import (
 	"strings"
 )
 
+func joinTags(card *guru.Card) string {
+	var tagNames []string
+	for _, tag := range card.Tags {
+		tagNames = append(tagNames, tag.Value)
+	}
+	return strings.Join(tagNames, ", ")
+}
+
 func main() {
 	args := os.Args[1:]
 	if len(args) < 2 {
@@ -32,14 +40,26 @@ func main() {
 
 		cards := client.CardByTags(tags...)
 		for _, card := range cards {
-			fmt.Printf("%-22s %s\n", card.Id, card.Title)
+			mytags := joinTags(card)
+			fmt.Printf("%-22s %s  %s\n", card.Id, card.Title, mytags)
 		}
 
 	case "create-card":
 		title := args[1]
 		content := strings.Join(args[2:], " ")
-		client.CreateCard(guru.NewCard(title, content))
+		card := client.CreateCard(guru.NewCard(title, content))
+		fmt.Printf("%s %s", card.Id, card.Title)
+	case "get-card":
+		id := args[1]
+		card := client.GetCard(id)
+		tags := joinTags(card)
+		fmt.Printf("%-40s  %s \n\n%s", card.Title, tags, card.Content)
+	case "add-tags":
+		id := args[1]
+		tags := strings.Split(args[2], ",")
+		client.AddTags(id, tags)
 	}
+
 }
 
 func initClient() *guru.Client {

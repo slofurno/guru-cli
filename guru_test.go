@@ -35,7 +35,7 @@ func TestEverything(t *testing.T) {
 	team := client.GetTeam()
 	client.Config.Team = team.Id
 
-	results := client.GetFacts("asdasd", "sadasdas")
+	results := client.SearchCards("asdasd", "sadasdas")
 	cardIds := []string{}
 
 	fmt.Println("search results:")
