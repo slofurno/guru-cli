@@ -8,15 +8,15 @@ import (
 )
 
 type Card struct {
-	Id                   string `json:"id, omitempty"`
-	Title                string `json:"preferredPhrase"`
-	Content              string `json:"content"`
-	VerificationInterval int    `json:"verificationInterval"`
-	ShareStatus          string `json:"shareStatus"`
-	CardType             string `json:"cardType"`
-	Tags                 []*Tag `json:"tags, omitempty"`
-	FileProvider         string `json:"fileProvider"`
-	FileLink             string `json:"fileLink"`
+	Id                   string  `json:"id, omitempty"`
+	Title                string  `json:"preferredPhrase"`
+	Content              string  `json:"content"`
+	VerificationInterval int     `json:"verificationInterval"`
+	ShareStatus          string  `json:"shareStatus"`
+	CardType             string  `json:"cardType"`
+	Tags                 []*Tag  `json:"tags, omitempty"`
+	FileProvider         *string `json:"fileProvider, omitempty"`
+	FileLink             *string `json:"fileLink, omitempty"`
 }
 
 func NewCard(title, content string) *Card {
@@ -44,8 +44,11 @@ func (s *Client) UpdateCard(card *Card) int {
 func (s *Client) CreateCard(card *Card) *Card {
 	uri := "https://api.getguru.com/api/v1/cards/"
 	body := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(body)
-	_ = encoder.Encode(card)
+	err := json.NewEncoder(body).Encode(card)
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	res, err := s.makeRequest("POST", uri, body)
 
@@ -54,8 +57,7 @@ func (s *Client) CreateCard(card *Card) *Card {
 	}
 
 	ret := &Card{}
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(ret)
+	err = json.NewDecoder(res.Body).Decode(ret)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -100,9 +102,10 @@ func (s *Client) AddTags(cardId string, tags []string) {
 		tagMap[tag.Value] = tag.Id
 	}
 
-	//TODO:make sure tag exists
 	for _, tag := range tags {
-		s.AddTag(cardId, tagMap[tag])
+		if tagId, ok := tagMap[tag]; ok {
+			s.AddTag(cardId, tagId)
+		}
 	}
 }
 

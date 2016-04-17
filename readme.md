@@ -34,7 +34,7 @@ go test
 search by tag
 
 ```
-./guru-cli find < comma,separated,tags >
+./guru-cli some tags
 ```
 
 create a card
@@ -46,7 +46,7 @@ create a card
 tag a card
 
 ```
-./guru-cli add-tags < card id > < comma,separated,tags >
+./guru-cli add-tags < card id > some useful tags
 ```
 
 get a card's contents

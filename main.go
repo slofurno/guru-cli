@@ -30,7 +30,7 @@ func main() {
 		title := args[1]
 		content := strings.Join(args[2:], " ")
 		card := client.CreateCard(guru.NewCard(title, content))
-		fmt.Printf("%s %s", card.Id, card.Title)
+		fmt.Printf("%s %s\n", card.Id, card.Title)
 	case "get-card":
 		id := args[1]
 		card := client.GetCard(id)
@@ -38,7 +38,11 @@ func main() {
 		fmt.Printf("%-40s  %s \n\n%s", card.Title, tags, card.Content)
 	case "add-tags":
 		id := args[1]
-		tags := strings.Split(args[2], ",")
+		if len(args) < 2 {
+			fmt.Println("missing tags")
+			os.Exit(1)
+		}
+		tags := args[2:]
 		client.AddTags(id, tags)
 	default:
 		cards := client.QueryCards(args...)
