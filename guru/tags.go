@@ -23,7 +23,7 @@ type CreateTagRequest struct {
 }
 
 func (s *Client) GetTagCategories() []*Category {
-	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/", s.config.Team)
+	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/", s.Config.Team)
 	res, _ := s.makeRequest("GET", uri, nil)
 	decoder := json.NewDecoder(res.Body)
 	tagCategories := []*Category{}
@@ -44,10 +44,9 @@ func (s *Client) CreateTag(cr *CreateTagRequest) *Tag {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+	//fmt.Println(string(buffer.Bytes()))
 
-	fmt.Println(string(buffer.Bytes()))
-
-	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/tags", s.config.Team)
+	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/tags", s.Config.Team)
 	res, _ := s.makeRequest("POST", uri, buffer)
 
 	//TODO: check for 400 status: tag already used
@@ -80,12 +79,9 @@ func (s *Client) AddTagToCards(request *BulkRequest) {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-
-	fmt.Println("bulkop req:")
-	fmt.Println(string(buffer.Bytes()))
-
+	//fmt.Println(string(buffer.Bytes()))
 	res, _ := s.makeRequest("POST", "https://api.getguru.com/api/v1/cards/bulkop", buffer)
 	fmt.Println("bulkops status: " + res.Status)
 }
 
-//https://api.getguru.com/api/v1/cards/bulkop
+//DELETE https://api.getguru.com/api/v1/teams/f390146e-ebe5-42b3-b077-a632d5564789/tagcategories/tags/b8ef1e93-b4a5-4139-a1b1-af344b118fa7

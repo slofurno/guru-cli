@@ -12,7 +12,7 @@ import (
 type Client struct {
 	*http.Client
 	token  string
-	config *Config
+	Config *Config
 }
 
 type Config struct {
@@ -35,13 +35,13 @@ func NewClient(config *Config) *Client {
 	return &Client{
 		Client: &http.Client{},
 		token:  config.Token,
-		config: config,
+		Config: config,
 	}
 }
 
 func (s *Client) auth() {
 	req, _ := http.NewRequest("POST", "https://api.getguru.com/user/auth", nil)
-	req.Header.Set("Cookie", s.config.ReloginToken)
+	req.Header.Set("Cookie", s.Config.ReloginToken)
 	res, err := s.Do(req)
 
 	if err != nil {
@@ -74,13 +74,12 @@ func (s *Client) auth() {
 	}
 
 	f.WriteString(fmt.Sprintf("%v\n", authtoken))
-	s.config.Team = auth.Team.Id
+	s.Config.Team = auth.Team.Id
 	s.token = authtoken
 }
 
 func (s *Client) makeRequest(method string, url string, body io.Reader) (*http.Response, error) {
 	for {
-		fmt.Println("making request: " + url)
 		req, _ := http.NewRequest(method, url, body)
 		req.Header.Set("Authorization", s.token)
 
@@ -95,9 +94,8 @@ func (s *Client) makeRequest(method string, url string, body io.Reader) (*http.R
 			os.Exit(1)
 		}
 
-		fmt.Println(res.StatusCode)
-
 		if res.StatusCode == http.StatusUnauthorized {
+			fmt.Println("getting new token")
 			s.auth()
 		} else {
 			return res, err

@@ -14,6 +14,7 @@ type Card struct {
 	VerificationInterval int    `json:"verificationInterval"`
 	ShareStatus          string `json:"shareStatus"`
 	CardType             string `json:"cardType"`
+	Tags                 []*Tag `json:"tags, omitempty"`
 }
 
 func NewCard(title, content string) *Card {
@@ -37,6 +38,7 @@ func (s *Client) UpdateCard(card *Card) int {
 	return res.StatusCode
 }
 
+//https://api.getguru.com/api/v1/cards/
 func (s *Client) CreateCard(card *Card) *Card {
 	uri := "https://api.getguru.com/api/v1/cards/"
 	body := bytes.NewBuffer(nil)

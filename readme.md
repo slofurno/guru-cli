@@ -15,3 +15,30 @@ make a directory .guru in your $HOME, and paste the above into a file called rel
 ```
 echo "{{ cookie }}" > $HOME/.guru/relogin_token
 ```
+
+### install
+```
+git clone https://github.com/slofurno/guru-cli.git
+cd guru-cli
+go get
+go build
+```
+
+### testing
+
+```
+go test
+```
+
+### cli
+search by tag
+
+```
+./guru-cli find <comma,delimited,tags>
+```
+
+create a card
+
+```
+./guru-cli create-card <title> <everything else will be the content>
+```
