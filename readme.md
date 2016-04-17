@@ -34,11 +34,23 @@ go test
 search by tag
 
 ```
-./guru-cli find <comma,delimited,tags>
+./guru-cli find < comma,separated,tags >
 ```
 
 create a card
 
 ```
-./guru-cli create-card <title> <everything else will be the content>
+./guru-cli create-card < title > < everything else will be the content >
+```
+
+tag a card
+
+```
+./guru-cli add-tags < card id > < comma,separated,tags >
+```
+
+get a card's contents
+
+```
+./guru-cli get-card < card id >
 ```
