@@ -33,7 +33,10 @@ func main() {
 	client := guru.NewClient(&guru.Config{ReloginToken: reloginToken, Token: maybetoken})
 	results := client.GetFacts("mesos", "docker")
 
+	cardIds := []string{}
+
 	for _, card := range results {
+		cardIds = append(cardIds, card.Id)
 		fmt.Println(card.Title, card.Content)
 	}
 
@@ -47,18 +50,36 @@ func main() {
 	tagCategories := client.GetTagCategories()
 	defaultCategory := tagCategories[0]
 
-	var lastTag string
+	var lastTagId string
 
 	for _, tag := range defaultCategory.Tags {
-		lastTag = tag.Id
+		lastTagId = tag.Id
 		fmt.Println(tag.Id + " " + tag.Value)
 	}
 
-	cards := client.CardByTags(lastTag)
+	cards := client.CardByTags(lastTagId)
 
 	fmt.Println("cards matching")
 	for _, x := range cards {
 		fmt.Println(x.Id + " " + x.Title)
 	}
+
+	fmt.Println(fmt.Sprintf("adding tag to %v cards", len(cardIds)))
+
+	_ = client.CreateTag(&guru.CreateTagRequest{
+		CategoryId: defaultCategory.Id,
+		Value:      "whatever2",
+	})
+
+	client.AddTagToCards(&guru.BulkRequest{
+		&guru.BulkAction{
+			Type:   "tag-card",
+			TagIds: []string{lastTagId},
+		},
+		&guru.BulkItems{
+			Type:    "id",
+			CardIds: cardIds,
+		},
+	})
 
 }

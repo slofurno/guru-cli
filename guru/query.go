@@ -21,6 +21,9 @@ func (s *Client) CardByTags(tagIds ...string) []*Card {
 		fmt.Println(err.Error())
 	}
 
+	fmt.Println(string(buffer.Bytes()))
+
+	//TODO: check for 204: no content (if no matches)
 	res, err := s.makeRequest("POST", "https://api.getguru.com/api/v1/search/query", buffer)
 	if err != nil {
 		fmt.Println(err)
