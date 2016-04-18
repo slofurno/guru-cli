@@ -3,37 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/slofurno/guru-cli/guru"
-	"io/ioutil"
-	"os"
-	"strings"
 	"testing"
 )
 
 func TestEverything(t *testing.T) {
-
-	home := os.Getenv("HOME")
-	var maybetoken string
-
-	f, err := os.Open(home + "/.guru/relogin_token")
-	defer f.Close()
-	if err != nil {
-		fmt.Println("relogin token not found at " + home + "./guru/relogin_token")
-		os.Exit(1)
-	}
-
-	b, _ := ioutil.ReadAll(f)
-	reloginToken := strings.TrimSpace(string(b))
-	fmt.Println(reloginToken)
-
-	storedtoken, err := ioutil.ReadFile(home + "/.guru/token")
-	if err == nil {
-		//TODO: right now i need to force auth for the team id
-		maybetoken = strings.TrimSpace(string(storedtoken))
-	}
-
-	client := guru.NewClient(&guru.Config{ReloginToken: reloginToken, Token: maybetoken})
-	team := client.GetTeam()
-	client.Config.Team = team.Id
+	client := initClient()
 
 	results := client.SearchCards("rick", "mesos")
 	cardIds := []string{}

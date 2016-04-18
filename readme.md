@@ -1,19 +1,19 @@
-In order to work with guru's api, we need to get a relogin token from the guru webapp,  which is then used to request temporary tokens.
+### credentials
 
-open your browsers dev tools, and then load the guru app at https://app.getguru.com/
-
-look for the request to /auth, checkout the request headers, and find the cookie
-
-you will need at least the following part of the cookie:
+you must set your guru credentials either by setting the enviroment variables
 
 ```
-email=slofurno%40gmail.com; slofurno%40gmail.com_reloginTok={{ some uuid }};
+GURU_EMAIL={{ email }}
+GURU_PASS={{ password }}
 ```
 
-make a directory .guru in your $HOME, and paste the above into a file called relogin_token, eg:
+or by saving them in json format at $HOME/.guru/credentials
 
 ```
-echo "{{ cookie }}" > $HOME/.guru/relogin_token
+{
+  "email": "your email",
+  "password": "your password"
+}
 ```
 
 ### install

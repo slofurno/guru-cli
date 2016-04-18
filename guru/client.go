@@ -1,12 +1,15 @@
 package guru
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Client struct {
@@ -31,12 +34,40 @@ type Team struct {
 	Id string `json:"id"`
 }
 
+type Login struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func NewClient(config *Config) *Client {
 	return &Client{
 		Client: &http.Client{},
 		token:  config.Token,
 		Config: config,
 	}
+}
+
+func (s *Client) Login(login *Login) error {
+	buffer := bytes.NewBuffer(nil)
+	_ = json.NewEncoder(buffer).Encode(login)
+	req, _ := http.NewRequest("POST", "https://api.getguru.com/auth/login", buffer)
+	req.Header.Set("Content-Type", "application/json")
+
+	res, _ := s.Do(req)
+
+	if res.StatusCode != http.StatusOK {
+		fmt.Println(res.Status)
+		return errors.New("login failed")
+	}
+	var cookies []string
+	for _, c := range res.Header["Set-Cookie"] {
+		cookies = append(cookies, strings.Split(c, ";")[0])
+	}
+
+	cookie := strings.Join(cookies, "; ")
+	s.Config.ReloginToken = cookie
+	fmt.Println("login success")
+	return nil
 }
 
 func (s *Client) auth() {

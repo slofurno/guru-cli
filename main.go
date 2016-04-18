@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/slofurno/guru-cli/guru"
 	"io/ioutil"
@@ -52,30 +54,77 @@ func main() {
 	}
 }
 
-func initClient() *guru.Client {
+func getLogin() (*guru.Login, error) {
+	maybeEmail := os.Getenv("GURU_EMAIL")
+	maybePass := os.Getenv("GURU_PASS")
 	home := os.Getenv("HOME")
-	var maybetoken string
 
-	f, err := os.Open(home + "/.guru/relogin_token")
+	if maybeEmail != "" || maybePass != "" {
+		return &guru.Login{Email: maybeEmail, Password: maybePass}, nil
+	}
+
+	f, err := os.Open(home + "/.guru/credentials")
 	defer f.Close()
 	if err != nil {
-		fmt.Println("relogin token not found at " + home + "./guru/relogin_token")
-		os.Exit(1)
+		return nil, errors.New("credentials not set in env or $HOME/.guru/credentials")
 	}
 
 	b, _ := ioutil.ReadAll(f)
-	reloginToken := strings.TrimSpace(string(b))
+	login := &guru.Login{}
+	err = json.Unmarshal(b, login)
+
+	if err != nil {
+		return nil, errors.New("credentials file invalid format")
+	}
+
+	return login, nil
+}
+
+func initClient() *guru.Client {
+	config := &guru.Config{}
+	home := os.Getenv("HOME")
+	var client *guru.Client
 
 	t, err := ioutil.ReadFile(home + "/.guru/token")
 	if err == nil {
-		maybetoken = strings.TrimSpace(string(t))
+		config.Token = strings.TrimSpace(string(t))
 	}
 
-	config := &guru.Config{ReloginToken: reloginToken, Token: maybetoken}
-	client := guru.NewClient(config)
+	if reloginToken, err := getReloginToken(); err == nil {
+		config.ReloginToken = reloginToken
+		client = guru.NewClient(config)
+	} else if login, err := getLogin(); err == nil {
+		client = guru.NewClient(config)
+		if err = client.Login(login); err != nil {
+			fmt.Println(err.Error())
+			os.Exit(1)
+		}
+
+		f, _ := os.Create(home + "/.guru/relogin_token")
+		defer f.Close()
+		f.WriteString(fmt.Sprintf("%s\n", config.ReloginToken))
+
+	} else {
+		fmt.Println("neither login credentials nor relogin token found")
+		os.Exit(1)
+	}
+
 	//TODO: something
 	team := client.GetTeam()
 	client.Config.Team = team.Id
 
 	return client
+}
+
+func getReloginToken() (string, error) {
+	home := os.Getenv("HOME")
+	f, err := os.Open(home + "/.guru/relogin_token")
+	defer f.Close()
+	if err != nil {
+		return "", errors.New("relogin token not found at " + home + "./guru/relogin_token")
+	}
+
+	b, _ := ioutil.ReadAll(f)
+	return strings.TrimSpace(string(b)), nil
+
 }
