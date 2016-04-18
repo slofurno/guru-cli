@@ -32,15 +32,12 @@ func NewCard(title, content string) *Card {
 func (s *Client) UpdateCard(card *Card) int {
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%v", card.Id)
 	buffer := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(buffer)
-	encoder.Encode(card)
+	_ = json.NewEncoder(buffer).Encode(card)
 
 	res, _ := s.makeRequest("PUT", uri, buffer)
-
 	return res.StatusCode
 }
 
-//https://api.getguru.com/api/v1/cards/
 func (s *Client) CreateCard(card *Card) *Card {
 	uri := "https://api.getguru.com/api/v1/cards/"
 	body := bytes.NewBuffer(nil)
@@ -79,9 +76,8 @@ func (s *Client) SearchCards(query ...string) []*Card {
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/search?terms=%v", qs)
 	res, _ := s.makeRequest("GET", uri, nil)
 
-	decoder := json.NewDecoder(res.Body)
 	results := []*Card{}
-	_ = decoder.Decode(&results)
+	_ = json.NewDecoder(res.Body).Decode(&results)
 	return results
 }
 
@@ -89,9 +85,8 @@ func (s *Client) GetCard(id string) *Card {
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/cards/%s", id)
 	res, _ := s.makeRequest("GET", uri, nil)
 
-	decoder := json.NewDecoder(res.Body)
 	card := &Card{}
-	_ = decoder.Decode(card)
+	_ = json.NewDecoder(res.Body).Decode(card)
 	return card
 }
 
@@ -101,7 +96,7 @@ func (s *Client) AddTags(cardId string, tags []string) {
 	for _, tag := range defaultCat.Tags {
 		tagMap[tag.Value] = tag.Id
 	}
-
+	//TODO: maybe use the bulk request instead of 1 by 1
 	for _, tag := range tags {
 		if tagId, ok := tagMap[tag]; ok {
 			s.AddTag(cardId, tagId)

@@ -15,9 +15,9 @@ type Board struct {
 func (s *Client) GetBoards() []*Board {
 	url := "https://api.getguru.com/api/v1/boards"
 	res, _ := s.makeRequest("GET", url, nil)
-	decoder := json.NewDecoder(res.Body)
+
 	boards := []*Board{}
-	err := decoder.Decode(&boards)
+	err := json.NewDecoder(res.Body).Decode(&boards)
 
 	if err != nil {
 		fmt.Println(err.Error())

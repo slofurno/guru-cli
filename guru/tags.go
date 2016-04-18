@@ -26,9 +26,8 @@ type CreateTagRequest struct {
 func (s *Client) GetTagCategories() []*Category {
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/", s.Config.Team)
 	res, _ := s.makeRequest("GET", uri, nil)
-	decoder := json.NewDecoder(res.Body)
 	tagCategories := []*Category{}
-	err := decoder.Decode(&tagCategories)
+	err := json.NewDecoder(res.Body).Decode(&tagCategories)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -39,8 +38,7 @@ func (s *Client) GetTagCategories() []*Category {
 
 func (s *Client) CreateTag(cr *CreateTagRequest) *Tag {
 	buffer := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(buffer)
-	err := encoder.Encode(cr)
+	err := json.NewEncoder(buffer).Encode(cr)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -51,9 +49,8 @@ func (s *Client) CreateTag(cr *CreateTagRequest) *Tag {
 	res, _ := s.makeRequest("POST", uri, buffer)
 
 	//TODO: check for 400 status: tag already used
-	decoder := json.NewDecoder(res.Body)
 	tag := &Tag{}
-	_ = decoder.Decode(tag)
+	_ = json.NewDecoder(res.Body).Decode(tag)
 	return tag
 }
 
@@ -74,13 +71,12 @@ type BulkRequest struct {
 
 func (s *Client) AddTagToCards(request *BulkRequest) {
 	buffer := bytes.NewBuffer(nil)
-	encoder := json.NewEncoder(buffer)
-	err := encoder.Encode(request)
+	err := json.NewEncoder(buffer).Encode(request)
 
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	//fmt.Println(string(buffer.Bytes()))
+
 	res, _ := s.makeRequest("POST", "https://api.getguru.com/api/v1/cards/bulkop", buffer)
 	fmt.Println("bulkops status: " + res.Status)
 	body, _ := ioutil.ReadAll(res.Body)

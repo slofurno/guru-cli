@@ -80,6 +80,7 @@ func getLogin() (*guru.Login, error) {
 	return login, nil
 }
 
+//TODO: return error and exit in one place
 func initClient() *guru.Client {
 	config := &guru.Config{}
 	home := os.Getenv("HOME")

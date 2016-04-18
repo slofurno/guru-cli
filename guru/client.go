@@ -80,9 +80,8 @@ func (s *Client) auth() {
 		os.Exit(1)
 	}
 
-	decoder := json.NewDecoder(res.Body)
 	auth := &Auth{}
-	err = decoder.Decode(auth)
+	err = json.NewDecoder(res.Body).Decode(auth)
 
 	if err != nil {
 		fmt.Println(err.Error())
