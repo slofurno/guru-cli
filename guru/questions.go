@@ -45,7 +45,7 @@ func (s *Client) AnswerQuestion(cardId, answer string) {
 		fmt.Println(err.Error())
 	}
 
-	_, err = s.makeRequest("PUT", uri, nil)
+	_, err = s.makeRequest("PUT", uri, buffer)
 	if err != nil {
 		fmt.Println(err.Error())
 	}

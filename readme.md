@@ -60,3 +60,28 @@ get a card's contents
 ```
 ./guru-cli get-card < card id >
 ```
+
+get unanswered questions
+
+```
+./guru-cli get-questions -
+```
+
+ask a question
+
+```
+./guru-cli ask-question <group identifier> <question>
+```
+
+answer a question
+
+```
+./guru-cli answer-question <id> <answer>
+```
+
+list group identifiers
+
+```
+./guru-cli get-groups -
+```
+

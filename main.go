@@ -25,6 +25,10 @@ func usage() {
 		"guru get-card <id>",
 		"guru add-tags <card id> <tag> <tag2> ..",
 		"guru create-tag <tag>",
+		"guru get-questions -",
+		"guru ask-question <group identifier> <question>",
+		"guru answer-question <id> <answer>",
+		"guru get-groups -",
 	} {
 		fmt.Println(a)
 	}
@@ -72,7 +76,7 @@ func main() {
 		//FIXME: only needs 1 arg
 	case "get-questions":
 		for _, card := range client.GetQuestions() {
-			fmt.Printf("%s\n%s\n%s\n\n", card.Title, card.Id, card.Content)
+			fmt.Printf("%s\n%s\n\n", card.Title, card.Id)
 		}
 	case "ask-question":
 		if len(args) < 3 {
@@ -84,7 +88,7 @@ func main() {
 		question := strings.Join(args[2:], " ")
 		var expertGroup *guru.Group
 		for _, group := range client.GetGroups() {
-			if group.Name == groupName {
+			if group.GroupIdentifier == groupName {
 				expertGroup = group
 			}
 		}
@@ -100,7 +104,14 @@ func main() {
 		})
 
 		fmt.Printf("%s %s", card.Id, card.Title)
-
+	case "answer-question":
+		id := args[1]
+		answer := strings.Join(args[2:], " ")
+		client.AnswerQuestion(id, answer)
+	case "get-groups":
+		for _, group := range client.GetGroups() {
+			fmt.Printf("%s\n", group.GroupIdentifier)
+		}
 	default:
 		cards := client.QueryCards(args...)
 		for _, card := range cards {

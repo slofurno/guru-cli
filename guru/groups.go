@@ -11,8 +11,9 @@ type Member struct {
 }
 
 type Group struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id              string `json:"id"`
+	Name            string `json:"name"`
+	GroupIdentifier string `json:"groupIdentifier"`
 }
 
 func (s *Client) GetTeamMembers() []*Member {
