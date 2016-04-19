@@ -18,10 +18,22 @@ func joinTags(card *guru.Card) string {
 	return strings.Join(tagNames, ", ")
 }
 
+func usage() {
+	for _, a := range []string{
+		"guru <search terms>",
+		"guru create-card <title> <content>",
+		"guru get-card <id>",
+		"guru add-tags <card id> <tag> <tag2> ..",
+		"guru create-tag <tag>",
+	} {
+		fmt.Println(a)
+	}
+}
+
 func main() {
 	args := os.Args[1:]
-	if len(args) < 1 {
-		fmt.Println("not enough args")
+	if len(args) < 2 {
+		usage()
 		os.Exit(1)
 	}
 
@@ -39,17 +51,28 @@ func main() {
 		tags := joinTags(card)
 		fmt.Printf("%-40s  %s \n\n%s", card.Title, tags, card.Content)
 	case "add-tags":
-		id := args[1]
-		if len(args) < 2 {
-			fmt.Println("missing tags")
+		if len(args) < 3 {
+			usage()
 			os.Exit(1)
 		}
+		id := args[1]
 		tags := args[2:]
 		client.AddTags(id, tags)
+	case "create-tag":
+		cr := &guru.CreateTagRequest{
+			Value: args[1],
+		}
+		for _, cat := range client.GetTagCategories() {
+			if cat.DefaultCategory {
+				cr.CategoryId = cat.Id
+			}
+		}
+		tag := client.CreateTag(cr)
+		fmt.Printf("%s %s", tag.Id, tag.Value)
 	default:
 		cards := client.QueryCards(args...)
 		for _, card := range cards {
-			fmt.Printf("%s \n%s\n\n", card.Title, card.Content)
+			fmt.Printf("%s\n%s\n%s\n\n", card.Title, card.Id, card.Content)
 		}
 	}
 }

@@ -13,9 +13,10 @@ type Tag struct {
 }
 
 type Category struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-	Tags []*Tag `json:"tags"`
+	Id              string `json:"id"`
+	Name            string `json:"name"`
+	Tags            []*Tag `json:"tags"`
+	DefaultCategory bool   `json:"defaultCategory"`
 }
 
 type CreateTagRequest struct {
@@ -43,7 +44,6 @@ func (s *Client) CreateTag(cr *CreateTagRequest) *Tag {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	//fmt.Println(string(buffer.Bytes()))
 
 	uri := fmt.Sprintf("https://api.getguru.com/api/v1/teams/%v/tagcategories/tags", s.Config.Team)
 	res, _ := s.makeRequest("POST", uri, buffer)

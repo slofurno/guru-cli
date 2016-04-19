@@ -49,6 +49,12 @@ tag a card
 ./guru-cli add-tags < card id > some useful tags
 ```
 
+create a tag
+
+```
+./guru-cli create-tag < tag >
+```
+
 get a card's contents
 
 ```
