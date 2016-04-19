@@ -69,6 +69,38 @@ func main() {
 		}
 		tag := client.CreateTag(cr)
 		fmt.Printf("%s %s", tag.Id, tag.Value)
+		//FIXME: only needs 1 arg
+	case "get-questions":
+		for _, card := range client.GetQuestions() {
+			fmt.Printf("%s\n%s\n%s\n\n", card.Title, card.Id, card.Content)
+		}
+	case "ask-question":
+		if len(args) < 3 {
+			usage()
+			os.Exit(1)
+		}
+
+		groupName := args[1]
+		question := strings.Join(args[2:], " ")
+		var expertGroup *guru.Group
+		for _, group := range client.GetGroups() {
+			if group.Name == groupName {
+				expertGroup = group
+			}
+		}
+
+		card := client.AskQuestion(&guru.Question{
+			Question: question,
+			Verifiers: []*guru.Expert{
+				&guru.Expert{
+					Type:      "user-group",
+					UserGroup: expertGroup,
+				},
+			},
+		})
+
+		fmt.Printf("%s %s", card.Id, card.Title)
+
 	default:
 		cards := client.QueryCards(args...)
 		for _, card := range cards {
