@@ -4,22 +4,30 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strings"
 )
 
 func (s *Client) QueryCards(tags ...string) []*Card {
-	searchTerms := strings.Join(tags, " ")
+	defaultCat := s.GetTagCategories()[0]
+	tagMap := map[string]string{}
+	for _, tag := range defaultCat.Tags {
+		tagMap[tag.Value] = tag.Id
+	}
+
+	expressions := []*Expression{{CardType: "QUESTION", Op: "NE", Type: "card-type"}}
+	for _, tag := range tags {
+		if tagId, ok := tagMap[tag]; ok {
+			expressions = append(expressions,
+				&Expression{Type: "tag", Op: "EXISTS", Ids: []string{tagId}})
+		}
+	}
+
 	query := &QueryRequest{
 		Query: &Query{
-			NestedExpressions: []*Expression{&Expression{
-				CardType: "QUESTION",
-				Op:       "NE",
-				Type:     "card-type",
-			}},
-			Op:   "AND",
-			Type: "grouping",
+			NestedExpressions: expressions,
+			Op:                "AND",
+			Type:              "grouping",
 		},
-		SearchTerms: searchTerms,
+		SearchTerms: "",
 	}
 
 	buffer := bytes.NewBuffer(nil)
@@ -55,7 +63,7 @@ type Expression struct {
 	Type     string   `json:"type"`
 	Ids      []string `json:"ids, omitempty"`
 	Op       string   `json:"op"`
-	CardType string   `json:"cardType"`
+	CardType string   `json:"cardType, omitempty"`
 }
 
 type Query struct {

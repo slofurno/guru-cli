@@ -36,7 +36,7 @@ func usage() {
 
 func main() {
 	args := os.Args[1:]
-	if len(args) < 2 {
+	if len(args) < 1 {
 		usage()
 		os.Exit(1)
 	}

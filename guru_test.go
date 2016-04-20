@@ -29,23 +29,21 @@ func TestEverything(t *testing.T) {
 	tagCategories := client.GetTagCategories()
 	defaultCategory := tagCategories[0]
 
-	var lastTagId string
+	var lastTag *guru.Tag
 
 	fmt.Println("all of our tag ids + values")
 	for _, tag := range defaultCategory.Tags {
-		lastTagId = tag.Id
+		lastTag = tag
 		fmt.Println(tag.Id + " " + tag.Value)
 	}
 
-	cards := client.QueryCards(lastTagId)
-
-	fmt.Printf("\ncards with the tag %s: \n", lastTagId)
+	cards := client.QueryCards(lastTag.Value)
+	fmt.Printf("\ncards with the tag %s: \n", lastTag.Value)
 	for _, x := range cards {
 		fmt.Println(x.Id + " " + x.Title)
 	}
 
 	fmt.Println(fmt.Sprintf("adding tag to %v cards", len(cardIds)))
-
 	_ = client.CreateTag(&guru.CreateTagRequest{
 		CategoryId: defaultCategory.Id,
 		Value:      "whatever2",
@@ -54,7 +52,7 @@ func TestEverything(t *testing.T) {
 	client.AddTagToCards(&guru.BulkRequest{
 		&guru.BulkAction{
 			Type:   "tag-card",
-			TagIds: []string{lastTagId},
+			TagIds: []string{lastTag.Id},
 		},
 		&guru.BulkItems{
 			Type:    "id",
